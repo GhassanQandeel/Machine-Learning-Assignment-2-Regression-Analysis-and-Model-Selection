@@ -112,11 +112,16 @@ categorical_columns = df.select_dtypes(exclude=['number']).columns
 
 print(numeric_columns)
 print(categorical_columns)
+
+
+
+
 print("we print the following pattern of data to what suitable missing value replacing ")
 for col in numeric_columns:
     print(df[col].value_counts(),"\n/////////")
 
-
+#Engine MEdian
+#Cylinder mean
 
 
 missing_summary = df.isnull().sum()
