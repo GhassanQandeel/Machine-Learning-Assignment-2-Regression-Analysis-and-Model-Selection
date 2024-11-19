@@ -9,7 +9,7 @@ from scipy.stats import zscore
 from sklearn.impute import SimpleImputer
 # from geopy.geocoders import Nominatim
 # from geopy.exc import GeocoderTimedOut
-from mpl_toolkits.basemap import Basemap
+
 import seaborn as sns
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
