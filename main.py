@@ -4,13 +4,14 @@ import numpy as np
 import re
 import requests
 from sklearn.linear_model import LinearRegression
-
+from sklearn.preprocessing import StandardScaler
 from scipy.stats import zscore
 from sklearn.impute import SimpleImputer
 # from geopy.geocoders import Nominatim
 # from geopy.exc import GeocoderTimedOut
 from mpl_toolkits.basemap import Basemap
 import seaborn as sns
+from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 
 
@@ -20,7 +21,7 @@ def to_USD(rates, amount, target_currency):
     return float(amount) * rates.get(target_currency, 0)
 
 
-url = f"https://v6.exchangerate-api.com/v6/4a5736bde4a84c84e2e208c3/latest/USD"
+url = f"https://mocki.io/v1/6b55e2fc-4bfd-4e13-9589-30636717e6ce"
 response = requests.get(url)
 
 df = pd.read_csv("cars.csv")
@@ -32,33 +33,15 @@ print("*****************************************************")
 print(f"Number of Examples: {len(df)}")
 print(f"Number of Features: {df.shape[1]}")
 print("*******************************************************\n")
-
-missing_summary = df.isnull().sum()
-print("Missing Values Summary:\n", missing_summary)
-
-# ###############################
-# # To choose suitable missing value for our data set, We should see what missing values is look like
-# missing_summary = df.isnull().sum()
-# print("Missing Values Summary:\n", missing_summary)
-# # As we see the cylinder feature have missing value and
-# print("for cylinder summary :",df['cylinder'].describe())
-# ###############################
-
 # i perform to clean each column because the data is very dirty
 # then replace it with strategy
 
-#NOTE :::: There fucking outliers in engine_capacity
-
-
 #Here we clean the seats from not nan value and not relly value  column
 df['seats'] = df['seats'].apply(lambda row: np.nan if "Seater" not in str(row) else row)
-
 #Here we clean the Top speed from not nan value and not relly value  column
 df["top_speed"] = df["top_speed"].apply(lambda row: row if re.findall(r'\d\d\d', str(row)) != [] else np.nan)
 #Here we clean the Horse power  from not nan value and not relly value  column
-
 df["horse_power"] = df["horse_power"].apply(lambda row: row if re.findall(r'\d+', str(row)) != [] else np.nan)
-
 df["cylinder"] = df["cylinder"].apply(lambda row: row if re.findall(r'\d+', str(row)) != [] else np.nan)
 df["engine_capacity"] = df["engine_capacity"].apply(lambda row: row if re.findall(r'\d+', str(row)) != [] else np.nan)
 
@@ -84,7 +67,6 @@ currency_codes = [
 ]
 
 #Here we clean the Price column from not nan value and not relly value
-
 df["price"] = df["price"].apply(lambda row: row if (str(row)[:3] in currency_codes) else np.nan)
 if response.status_code == 200:
     data = response.json()
@@ -92,11 +74,16 @@ if response.status_code == 200:
     #Here we standard all values to USD USing API
     df["price"] = df["price"].apply(
         lambda row: to_USD(rates, str(row)[4:].replace(',', ''), str(row)[:3]) if str(row) != "nan" else np.nan)
-
 else:
     print("Error fetching data:", response.status_code, response.text)
 
+
+
+scaler = StandardScaler()
+df['price'] = scaler.fit_transform(df[['price']])
+
 print("********************************")
+
 #Here we will split numirical featuers from catrgorical
 df["top_speed"] = df["top_speed"].apply(lambda row: float(row) if str(row) != "nan" else np.nan)
 df["horse_power"] = df["horse_power"].apply(lambda row: float(row) if str(row) != "nan" else np.nan)
@@ -131,10 +118,6 @@ print("Missing Values Summary:\n", missing_summary)
 
 #For the price column i will take the null values as test data set
 
-print("we print the following pattern of data to what suitable missing value replacing For categorical columns ")
-for col in categorical_columns:
-    print(df[col].value_counts(), "\n/#/#/#/#/#/#/#/#/#")
-
 categorical_columns = ['seats', 'brand', 'country']
 for col in categorical_columns:
     df_encoded = pd.get_dummies(df[col], prefix=col)
@@ -146,19 +129,34 @@ for col in categorical_columns:
 #so
 test_DataSet = df[df['price'].isna()]
 validation_DataSet_temp = df[df['price'].notna()]
+validation_DataSet, training_DataSet = train_test_split(validation_DataSet_temp, test_size=0.75,random_state=42)  # 0.75 of 80% is 60%
 
-validation_DataSet, training_DataSet = train_test_split(validation_DataSet_temp, test_size=0.75,
-                                                        random_state=42)  # 0.75 of 80% is 60%
-# validation_DataSet = pd.DataFrame(validation_DataSet)
-# training_DataSet = pd.DataFrame(training_DataSet)
 
 print(validation_DataSet)
 print(test_DataSet)
 print(training_DataSet)
 #Know we will begin with linear regresion moel
-#
-# training_labels_x = training_DataSet.drop(['price'], axis=1)
-# training_label_y = training_DataSet['price']
-#
-# model = LinearRegression()
-# model.fit(training_labels_x, training_label_y)
+
+training_labels_x = training_DataSet.drop(['price'], axis=1)
+training_labels_x = training_labels_x.drop(['car name'], axis=1)
+training_label_y = training_DataSet['price']
+
+validation_labels_x = validation_DataSet.drop(['price'], axis=1)
+validation_labels_x =validation_labels_x.drop(['car name'], axis=1)
+validation_label_y = validation_DataSet['price']
+
+test_labels_x = test_DataSet.drop(['price'], axis=1)
+test_labels_x = test_labels_x.drop(['car name'], axis=1)
+test_label_y = test_DataSet['price']
+
+model = LinearRegression()
+model.fit(training_labels_x, training_label_y)
+
+y_val_pred = model.predict(validation_labels_x)
+mse = mean_squared_error(validation_label_y, y_val_pred)
+r2 = r2_score(validation_label_y, y_val_pred)
+
+
+print("Model Performance:")
+print(f"Mean Squared Error: {mse:.2f}")
+print(f"R² Score: {r2:.2f}")
