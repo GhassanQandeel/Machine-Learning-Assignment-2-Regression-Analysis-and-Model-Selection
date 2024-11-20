@@ -5,6 +5,9 @@ import re
 import requests
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV
+from sklearn.linear_model import Lasso
+from sklearn.linear_model import Ridge
 from scipy.stats import zscore
 from sklearn.impute import SimpleImputer
 # from geopy.geocoders import Nominatim
@@ -146,6 +149,7 @@ validation_label_y = validation_DataSet['price']
 test_labels_x = test_DataSet.drop(['price'], axis=1)
 test_label_y = test_DataSet['price']
 
+
 model = LinearRegression()
 model.fit(training_labels_x, training_label_y)
 
@@ -153,7 +157,30 @@ y_val_pred = model.predict(validation_labels_x)
 mse = mean_squared_error(validation_label_y, y_val_pred)
 r2 = r2_score(validation_label_y, y_val_pred)
 
-
-print("Model Performance:")
+print("*****************************************************")
+print("Linear Regression Model Performance:")
 print(f"Mean Squared Error: {mse:.2f}")
 print(f"R² Score: {r2:.2f}")
+
+
+#For LASSO Regression i will search for best alpha (Hyper parameter )
+print("*****************************************************")
+param_grid = [0.01, 0.1, 1, 10, 100]
+for alpha in param_grid:
+    lasso = Lasso(alpha=alpha)
+    ridge = Ridge(alpha=alpha)
+    lasso.fit(training_labels_x, training_label_y)
+    ridge.fit(training_labels_x, training_label_y)
+    print(f"Lasso Regression Model Performance for alpha: {alpha}:")
+    mse_lasso = mean_squared_error(validation_label_y, lasso.predict(validation_labels_x))
+    r2_lasso = r2_score(validation_label_y, lasso.predict(validation_labels_x))
+    print(f"Mean Squared Error: {mse_lasso:.2f}")
+    print(f"R² Score: {r2_lasso:.2f}")
+    print("//////////////////////////////////////////////////")
+    print(f"Ridge Regression Model Performance for alpha: {alpha}:")
+    mse_ridge = mean_squared_error(validation_label_y, ridge.predict(validation_labels_x))
+    r2_ridge = r2_score(validation_label_y, ridge.predict(validation_labels_x))
+    print(f"Mean Squared Error: {mse_ridge:.2f}")
+    print(f"R² Score: {r2_ridge:.2f}")
+    print("*****************************************************")
+
