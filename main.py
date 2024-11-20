@@ -189,5 +189,12 @@ for alpha in param_grid:
     print("*****************************************************")
 
 
+param ={'alpha':[0.01,0.1,10,100]}
+grid_search_lasso = GridSearchCV(estimator=lasso,param_grid=param, scoring ='r2', cv=5)
+grid_search_lasso.fit(training_labels_x,training_label_y)
+print("optimal alpha for lasso",grid_search_lasso.best_params_)
 
-# grid_search = GridSearchCV(lasso, param_grid, cv=5, scoring='r2')
+grid_search_ridge = GridSearchCV(estimator=ridge,param_grid=param, scoring ='r2', cv=5)
+grid_search_ridge.fit(training_labels_x,training_label_y)
+print("optimal alpha for ridge",grid_search_ridge.best_params_)
+print("*****************************************************")
