@@ -118,7 +118,7 @@ print("Missing Values Summary:\n", missing_summary)
 
 #For the price column i will take the null values as test data set
 
-categorical_columns = ['seats', 'brand', 'country']
+categorical_columns = ['seats', 'brand', 'country','car name']
 for col in categorical_columns:
     df_encoded = pd.get_dummies(df[col], prefix=col)
     df = pd.concat([df, df_encoded], axis=1)
@@ -138,15 +138,12 @@ print(training_DataSet)
 #Know we will begin with linear regresion moel
 
 training_labels_x = training_DataSet.drop(['price'], axis=1)
-training_labels_x = training_labels_x.drop(['car name'], axis=1)
 training_label_y = training_DataSet['price']
 
 validation_labels_x = validation_DataSet.drop(['price'], axis=1)
-validation_labels_x =validation_labels_x.drop(['car name'], axis=1)
 validation_label_y = validation_DataSet['price']
 
 test_labels_x = test_DataSet.drop(['price'], axis=1)
-test_labels_x = test_labels_x.drop(['car name'], axis=1)
 test_label_y = test_DataSet['price']
 
 model = LinearRegression()
