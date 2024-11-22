@@ -9,6 +9,8 @@ from sklearn.svm import SVR
 from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import Ridge
+from IPython.display import display
+
 
 
 import seaborn as sns
@@ -83,7 +85,7 @@ df['price'] = scaler.fit_transform(df[['price']])
 
 print("********************************")
 
-# Here we will split numirical featuers from catrgorical
+# Here we will split numerical features from categorical
 df["top_speed"] = df["top_speed"].apply(lambda row: float(row) if str(row) != "nan" else np.nan)
 df["horse_power"] = df["horse_power"].apply(lambda row: float(row) if str(row) != "nan" else np.nan)
 df["cylinder"] = df["cylinder"].apply(lambda row: float(row) if (row != np.nan) else np.nan)
@@ -152,11 +154,7 @@ lin_mse = mean_squared_error(validation_label_y, y_val_pred)
 lin_r2 = r2_score(validation_label_y, y_val_pred)
 lin_mae = mean_absolute_error(validation_label_y, y_val_pred)
 
-print("*****************************************************")
-print("Linear Regression Model Performance:")
-print(f"Mean Squared Error: {lin_mse:.2f}")
-print(f"R² Score: {lin_r2:.2f}")
-print(f"Mean Absolute Error: {lin_mae:.2f}")
+
 
 
 #For LASSO Regression i will search for best alpha (Hyper parameter )
@@ -183,20 +181,31 @@ for alpha in param_grid:
     print(f"Mean Squared Error: {mse_ridge:.2f}")
     print(f"R² Score: {r2_ridge:.2f}")
     print(f"Mean Absolute Error: {mae_ridge:.2f}")
+
 print("*****************************************************")
-param = {'alpha': [0.01, 0.1, 10, 100]}
+param = {'alpha': [0.01, 0.1,1,10, 100]}
+
 grid_search_lasso = GridSearchCV(estimator=lasso, param_grid=param, scoring='r2', cv=5)
 grid_search_lasso.fit(training_labels_x, training_label_y)
 print("optimal alpha for lasso", grid_search_lasso.best_params_)
-
+mse_lasso = mean_squared_error(validation_label_y, grid_search_lasso.predict(validation_labels_x))
+r2_lasso = r2_score(validation_label_y, grid_search_lasso.predict(validation_labels_x))
+mae_lasso = mean_absolute_error(validation_label_y, grid_search_lasso.predict(validation_labels_x))
 grid_search_ridge = GridSearchCV(estimator=ridge, param_grid=param, scoring='r2', cv=5)
 grid_search_ridge.fit(training_labels_x, training_label_y)
 print("optimal alpha for ridge", grid_search_ridge.best_params_)
+mse_ridge = mean_squared_error(validation_label_y, grid_search_ridge.predict(validation_labels_x))
+r2_ridge = r2_score(validation_label_y, grid_search_ridge.predict(validation_labels_x))
+mae_ridge = mean_absolute_error(validation_label_y, grid_search_ridge.predict(validation_labels_x))
+
+
+
 
 # Okay , As i understand we need to construct closed form solution for our data set then compare it with linear reg model
 x = np.array(training_labels_x)
 y = np.array(training_label_y)
 m, n = x.shape
+
 # Here for column multiply it with last parameter without feature
 x = np.hstack((np.ones((m, 1)), x))
 
@@ -220,11 +229,7 @@ closed_form_mse = mean_squared_error(validation_label_y, y_val_pred_from_closed_
 closed_form_r2 = r2_score(validation_label_y, y_val_pred_from_closed_form)
 closed_form_mae = mean_absolute_error(validation_label_y, y_val_pred_from_closed_form)
 
-print("*****************************************************")
-print("Closed Form Solution  Performance:")
-print(f"Mean Squared Error: {closed_form_mse:.2f}")
-print(f"R² Score: {closed_form_r2:.2f}")
-print(f"Mean Absolute Error: {closed_form_mae:.2f}")
+
 
 # Gradiant descent let see it in another time
 # For Polynomial we will transform features from linear degree == 1 to non linear using transform the features as below
@@ -233,43 +238,35 @@ print(f"Mean Absolute Error: {closed_form_mae:.2f}")
 # # When i put the degree 3 the program take about five minutes to run
 # #when i put it 10 give me error is cant place this number of feature
 # #so i will keep it 2
-# poly = PolynomialFeatures(degree=2)
-# x_train_poly = poly.fit_transform(training_labels_x)
-# x_validation_poly = poly.fit_transform(validation_labels_x)
-# poly_regression = LinearRegression()
-#
-# poly_regression.fit(x_train_poly, training_label_y)
-#
-# poly_val_pred = poly_regression.predict(x_validation_poly)
-#
-# poly_mse = mean_squared_error(validation_label_y, poly_val_pred)
-# poly_r2 = r2_score(validation_label_y, poly_val_pred)
-# poly_mae = mean_absolute_error(validation_label_y, poly_val_pred)
-# print("*******************************************************")
-# print("Polynomial Regression Model Performance for degree 2 :")
-# print(f"Mean Squared Error: {poly_mse:.2f}")
-# print(f"R² Score: {poly_r2:.2f}")
-# print(f"Mean Absolute Error: {poly_mae:.2f}")
-#
-# scaler = StandardScaler()
-# x_train_scaled = scaler.fit_transform(training_labels_x)
-# x_validation_scaled = scaler.transform(validation_labels_x)
-# # RBF Kernel with Support Vector Regression (SVR)
-# rbf_svr = SVR(kernel='rbf', C=1.0, gamma='scale')  # Adjust 'C' and 'gamma' for best results
-# rbf_svr.fit(x_train_scaled, training_label_y)
-#
-# # Predictions
-# validation_pred_rbf = rbf_svr.predict(x_validation_scaled)
-#
-# # Evaluate Performance
-# mse_rbf = mean_squared_error(validation_label_y, validation_pred_rbf)
-# r2_rbf = r2_score(validation_label_y, validation_pred_rbf)
-# r2_rbf_mae = mean_absolute_error(validation_label_y, validation_pred_rbf)
-# print("*******************************************************")
-# print(f"RBF Kernel Model Performance:")
-# print(f"Mean Squared Error: {mse_rbf:.2f}")
-# print(f"R² Score: {r2_rbf:.2f}")
-# print(f"Mean Absolute Error: {r2_rbf_mae:.2f}")
+poly = PolynomialFeatures(degree=2)
+x_train_poly = poly.fit_transform(training_labels_x)
+x_validation_poly = poly.fit_transform(validation_labels_x)
+poly_regression = LinearRegression()
+
+poly_regression.fit(x_train_poly, training_label_y)
+
+poly_val_pred = poly_regression.predict(x_validation_poly)
+
+poly_mse = mean_squared_error(validation_label_y, poly_val_pred)
+poly_r2 = r2_score(validation_label_y, poly_val_pred)
+poly_mae = mean_absolute_error(validation_label_y, poly_val_pred)
+
+
+scaler = StandardScaler()
+x_train_scaled = scaler.fit_transform(training_labels_x)
+x_validation_scaled = scaler.transform(validation_labels_x)
+# RBF Kernel with Support Vector Regression (SVR)
+rbf_svr = SVR(kernel='rbf', C=1.0, gamma='scale')  # Adjust 'C' and 'gamma' for best results
+rbf_svr.fit(x_train_scaled, training_label_y)
+
+# Predictions
+validation_pred_rbf = rbf_svr.predict(x_validation_scaled)
+
+# Evaluate Performance
+mse_rbf = mean_squared_error(validation_label_y, validation_pred_rbf)
+r2_rbf = r2_score(validation_label_y, validation_pred_rbf)
+rbf_mae = mean_absolute_error(validation_label_y, validation_pred_rbf)
+
 
 #For feature selection we will we will do for loop and check each time we add feature
 selected_features = []  # Start with this
@@ -305,3 +302,28 @@ while remaining_features and (len(selected_features) < max_features):
     last_mse = best_mse
 
     print(f"Step {len(selected_features)}: Added feature '{best_feature}' with MSE = {best_mse:.4f}")
+
+
+model_metrics = [
+    {"Model": "Linear Regression", "MSE": lin_mse, "MAE": lin_mae, "R-squared": lin_r2},
+    {"Model": "Lasso Regression", "MSE": mse_lasso, "MAE": mae_lasso, "R-squared": r2_lasso},
+    {"Model": "Ridge Regression", "MSE": mse_ridge, "MAE": mae_ridge, "R-squared": r2_ridge},
+    {"Model": "Closed Form Solution", "MSE": closed_form_mse, "MAE": closed_form_mae, "R-squared": closed_form_r2},
+    {"Model": "Polynomial Regression", "MSE": poly_mse, "MAE": poly_mae, "R-squared": poly_r2},
+    {"Model": "Radial Basis Function (RBF)", "MSE": mse_rbf, "MAE": rbf_mae, "R-squared": r2_rbf}
+]
+
+for metric in model_metrics:
+    print("*******************************************************")
+    print(f"{metric['Model']} Model Performance")
+    print(f"Mean Squared Error: {metric['MSE']:.2f}")
+    print(f"R² Score: {metric['MAE']:.2f}")
+    print(f"Mean Absolute Error: {metric['R-squared']:.2f}")
+
+
+print("Here we see the best model performance ")
+#So we will test our model on test data set so
+x_test_scaled = scaler.fit_transform(test_labels_x)
+
+prediction_y=rbf_svr.predict(x_test_scaled)
+
