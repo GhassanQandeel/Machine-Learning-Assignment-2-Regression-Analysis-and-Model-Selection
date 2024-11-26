@@ -46,29 +46,14 @@ df["horse_power"] = df["horse_power"].apply(lambda row: row if re.findall(r'\d+'
 df["cylinder"] = df["cylinder"].apply(lambda row: row if re.findall(r'\d+', str(row)) != [] else np.nan)
 df["engine_capacity"] = df["engine_capacity"].apply(lambda row: row if re.findall(r'\d+', str(row)) != [] else np.nan)
 
-# That i will replace it with api if i have time
-currency_codes = [
-    "USD", "AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG",
-    "AZN", "BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB",
-    "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF", "CHF", "CLP",
-    "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD",
-    "EGP", "ERN", "ETB", "EUR", "FJD", "FKP", "FOK", "GBP", "GEL", "GGP",
-    "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD", "HKD", "HNL", "HRK", "HTG",
-    "HUF", "IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK", "JEP", "JMD",
-    "JOD", "JPY", "KES", "KGS", "KHR", "KID", "KMF", "KRW", "KWD", "KYD",
-    "KZT", "LAK", "LBP", "LKR", "LRD", "LSL", "LYD", "MAD", "MDL", "MGA",
-    "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR",
-    "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN",
-    "PGK", "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF",
-    "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLE", "SLL", "SOS",
-    "SRD", "SSP", "STN", "SYP", "SZL", "THB", "TJS", "TMT", "TND", "TOP",
-    "TRY", "TTD", "TVD", "TWD", "TZS", "UAH", "UGX", "UYU", "UZS", "VES",
-    "VND", "VUV", "WST", "XAF", "XCD", "XDR", "XOF", "XPF", "YER", "ZAR",
-    "ZMW", "ZWL"
-]
-
-# Here we clean the Price column from not nan value and not relly value
-df["price"] = df["price"].apply(lambda row: row if (str(row)[:3] in currency_codes) else np.nan)
+# json file url
+json_url=f"https://mocki.io/v1/24326926-978b-4c04-a7f8-d79022e96d6f"
+response_codes=requests.get(json_url)
+if response_codes.status_code==200:
+    data_codes=response_codes.json()
+    codes=data_codes["currency_codes"]
+    # Here we clean the Price column from not nan value and not relly value
+    df["price"] = df["price"].apply(lambda row: row if (str(row)[:3] in codes) else np.nan)
 if response.status_code == 200:
     data = response.json()
     rates = data["conversion_rates"]
@@ -129,7 +114,9 @@ for col in categorical_columns:
 test_DataSet = df[df['price'].isna()]
 validation_DataSet_temp = df[df['price'].notna()]
 validation_DataSet, training_DataSet = train_test_split(validation_DataSet_temp, test_size=0.75,random_state=42)  # 0.75 of 80% is 60%
-
+#############################################################
+# end of preprocessing
+#############################################################
 # Know we will begin with linear regression model
 
 training_labels_x = training_DataSet.drop(['price'], axis=1)
