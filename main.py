@@ -215,8 +215,12 @@ y_val_pred_from_closed_form = x_validation_array @ closed_form
 closed_form_mse = mean_squared_error(validation_label_y, y_val_pred_from_closed_form)
 closed_form_r2 = r2_score(validation_label_y, y_val_pred_from_closed_form)
 closed_form_mae = mean_absolute_error(validation_label_y, y_val_pred_from_closed_form)
-
-
+print("*****************************************************")
+print("Closed form solution performance:")
+print(f"Mean Squared Error: {closed_form_mse:.2f}")
+print(f"R² Score: {closed_form_r2:.2f}")
+print(f"Mean Absolute Error: {closed_form_mae:.2f}")
+print("*****************************************************")
 
 # Gradiant descent let see it in another time
 # For Polynomial we will transform features from linear degree == 1 to non linear using transform the features as below
