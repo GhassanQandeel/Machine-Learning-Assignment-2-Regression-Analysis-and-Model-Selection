@@ -322,3 +322,29 @@ print("Here we see the best model performance ")
 #So we will test our model on test data set so
 x_test_scaled = scaler.fit_transform(test_labels_x)
 prediction_y=rbf_svr.predict(x_test_scaled)
+#7 - for point 7 we take the prediction
+#We should print the actual valuees if it exist but our data preproccessing part we take the test set as no price for it
+plt.figure(figsize=(10, 6))
+
+# Plotting the predicted values
+plt.plot(prediction_y, label='Predicted Values', color='blue', marker='o', linestyle='--')
+
+#We will compare it with vakidation prices
+plt.plot(validation_label_y, label='Actual Values', color='red', marker='x')
+
+plt.title('SVR Predictions')
+plt.xlabel('Sample Index')
+plt.ylabel('Predicted Value')
+plt.legend()
+plt.grid(True)
+
+plt.show()
+
+plt.figure(figsize=(10, 6))
+plt.plot(validation_label_y, label='Actual Values', color='red', marker='x')
+plt.title('SVR Predictions')
+plt.xlabel('Sample Index')
+plt.ylabel('Actual Values for Validations')
+plt.legend()
+plt.grid(True)
+plt.show()
