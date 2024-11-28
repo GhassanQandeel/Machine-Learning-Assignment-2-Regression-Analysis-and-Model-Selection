@@ -310,11 +310,15 @@ for metric in model_metrics:
     print(f"Mean Squared Error: {metric['MSE']:.2f}")
     print(f"R² Score: {metric['MAE']:.2f}")
     print(f"Mean Absolute Error: {metric['R-squared']:.2f}")
-
-
+# finding the best model performance 
+print("*******************************************************")
+least_mse=min(model_metrics,key=lambda x:x['MSE'])
+highest_r2=max(model_metrics,key=lambda x:x['R-squared'])
+print(f"The model with the best mean squared error:\n",{least_mse['Model']})
+print(f"The model with the best r-squared:\n",{highest_r2['Model']})
+print("*******************************************************")
+    
 print("Here we see the best model performance ")
 #So we will test our model on test data set so
 x_test_scaled = scaler.fit_transform(test_labels_x)
-
 prediction_y=rbf_svr.predict(x_test_scaled)
-
